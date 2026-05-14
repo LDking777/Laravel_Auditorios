@@ -155,6 +155,11 @@ class SpaceController extends Controller
      */
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('spaces.public.index')
+                ->with('error', 'Solo los administradores pueden crear auditorios.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:spaces,name',
             'type' => 'required|string|max:255',
@@ -195,6 +200,11 @@ class SpaceController extends Controller
      */
     public function update(Request $request, Space $space)
     {
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('spaces.public.index')
+                ->with('error', 'No tienes permisos de administrador.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:spaces,name,' . $space->id,
             'type' => 'required|string|max:255',
@@ -216,6 +226,11 @@ class SpaceController extends Controller
      */
     public function destroy(Space $space)
     {
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('spaces.public.index')
+                ->with('error', 'No tienes permisos de administrador.');
+        }
+
         $space->delete();
 
         return redirect()->route('admin.spaces.index');

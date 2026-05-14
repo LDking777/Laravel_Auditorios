@@ -18,7 +18,14 @@ class Space extends Model
     'description',
     'price_per_hour',
     'is_active',
-  ]; 
+  ];
+
+  protected function casts(): array
+  {
+      return [
+          'is_active' => 'boolean',
+      ];
+  } 
 
     /**
      * Un espacio tiene muchas disponibilidades semanales.
