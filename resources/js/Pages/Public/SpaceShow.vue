@@ -11,6 +11,7 @@ const props = defineProps({
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const isStaff = computed(() => user.value?.role === 'staff');
+const flashError = computed(() => page.props.flash?.error);
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
 const seatsPerRow = 10;
@@ -21,20 +22,33 @@ const pricePerSeat = computed(() => {
     return props.space.price_per_hour ? parseFloat(props.space.price_per_hour) : 15000;
 });
 
-const now = new Date();
 const pad = (n) => String(n).padStart(2, '0');
-const defaultStart = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours()+1)}:00`;
-const defaultEnd = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours()+3)}:00`;
+const formatDateTime = (d) => {
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
-const staffStart = ref(defaultStart);
-const staffEnd = ref(defaultEnd);
+const getDefaultStart = () => {
+    const d = new Date();
+    d.setHours(d.getHours() + 1, 0, 0, 0);
+    return formatDateTime(d);
+};
+const getDefaultEnd = () => {
+    const d = new Date();
+    d.setHours(d.getHours() + 3, 0, 0, 0);
+    return formatDateTime(d);
+};
+
+const staffStart = ref(getDefaultStart());
+const staffEnd = ref(getDefaultEnd());
 
 const staffHours = computed(() => {
     const s = new Date(staffStart.value);
     const e = new Date(staffEnd.value);
     const diff = (e - s) / (1000 * 60 * 60);
-    return Math.max(1, Math.round(diff * 10) / 10);
+    return diff > 0 ? Math.round(diff * 10) / 10 : 0;
 });
+
+const canSubmit = computed(() => staffHours.value >= 1);
 
 const staffTotal = computed(() => {
     return staffHours.value * pricePerSeat.value;
@@ -151,6 +165,9 @@ const submitStaffRental = () => {
                 </div>
 
                 <template v-if="isStaff">
+                    <div v-if="flashError" class="mb-4 backdrop-blur-2xl bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4">
+                        <p class="text-rose-300 text-xs">{{ flashError }}</p>
+                    </div>
                     <div class="backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl flex flex-col justify-between h-fit">
                         <div>
                             <h2 class="text-xl font-bold border-b border-white/5 pb-4 mb-6">Detalles de la Reserva</h2>
@@ -167,7 +184,7 @@ const submitStaffRental = () => {
                                     <input v-model="staffEnd" type="datetime-local" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                                 </div>
                                 <div class="bg-white/5 rounded-xl p-4 border border-white/5 space-y-2">
-                                    <div class="flex justify-between text-xs"><span class="text-white/40">Duración</span><span class="font-bold text-white">{{ staffHours }} hora{{ staffHours !== 1 ? 's' : '' }}</span></div>
+                                    <div class="flex justify-between text-xs"><span class="text-white/40">Duración</span><span class="font-bold text-white" :class="staffHours < 1 ? 'text-red-400' : ''">{{ staffHours < 1 ? 'Horario inválido' : staffHours + ' hora' + (staffHours !== 1 ? 's' : '') }}</span></div>
                                     <div class="flex justify-between text-xs"><span class="text-white/40">Tarifa por hora</span><span class="font-bold text-blue-400">${{ pricePerSeat.toLocaleString() }} COP</span></div>
                                 </div>
                             </div>
@@ -178,7 +195,7 @@ const submitStaffRental = () => {
                                 <span class="text-sm text-white/40">Total estimado:</span>
                                 <span class="text-3xl font-extrabold tracking-tight text-white">${{ staffTotal.toLocaleString() }} <span class="text-xs text-white/40 font-normal">COP</span></span>
                             </div>
-                            <button @click="submitStaffRental" :disabled="staffHours < 1" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transform transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none">
+                            <button @click="submitStaffRental" :disabled="!canSubmit" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transform transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none">
                                 <span class="flex items-center justify-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     Alquilar Auditorio Completo

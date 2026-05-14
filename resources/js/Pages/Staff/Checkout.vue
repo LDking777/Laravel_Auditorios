@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -12,6 +12,7 @@ const props = defineProps({
 
 const page = usePage();
 const loading = ref(false);
+const flashError = computed(() => page.props.flash?.error);
 
 const form = ref({
     event_name: '',
@@ -46,6 +47,11 @@ const confirmPayment = () => {
         <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
+        <div v-if="flashError" class="w-full max-w-lg mb-4 relative z-10">
+            <div class="backdrop-blur-2xl bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4">
+                <p class="text-rose-300 text-xs">{{ flashError }}</p>
+            </div>
+        </div>
         <div v-if="page.props.errors && Object.keys(page.props.errors).length" class="w-full max-w-lg mb-4 relative z-10">
             <div class="backdrop-blur-2xl bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4">
                 <p v-for="(msg, key) in page.props.errors" :key="key" class="text-rose-300 text-xs">{{ msg }}</p>

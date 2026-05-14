@@ -18,7 +18,7 @@ class StaffRentalController extends Controller
     {
         $request->validate([
             'space_id' => 'required|exists:spaces,id',
-            'start_time' => 'required|date',
+            'start_time' => 'required|date|after:now',
             'end_time' => 'required|date|after:start_time',
         ]);
 
@@ -42,11 +42,26 @@ class StaffRentalController extends Controller
         ]);
     }
 
+    private function findOverlap($spaceId, $start, $end)
+    {
+        return Reservation::where('space_id', $spaceId)
+            ->whereNotIn('status', ['cancelada', 'rechazada'])
+            ->where(function ($q) use ($start, $end) {
+                $q->whereBetween('start_time', [$start, $end])
+                  ->orWhereBetween('end_time', [$start, $end])
+                  ->orWhere(function ($q2) use ($start, $end) {
+                      $q2->where('start_time', '<=', $start)
+                         ->where('end_time', '>=', $end);
+                  });
+            })
+            ->first();
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'space_id' => 'required|exists:spaces,id',
-            'start_time' => 'required|date',
+            'start_time' => 'required|date|after:now',
             'end_time' => 'required|date|after:start_time',
             'event_name' => 'required|string|max:255',
             'event_description' => 'nullable|string',
@@ -55,6 +70,13 @@ class StaffRentalController extends Controller
         ]);
 
         $user = auth()->user();
+        $start = Carbon::parse($validated['start_time']);
+        $end = Carbon::parse($validated['end_time']);
+
+        $conflict = $this->findOverlap($validated['space_id'], $start, $end);
+        if ($conflict) {
+            return back()->with('error', 'El auditorio ya está reservado en ese horario por ' . e($conflict->user_name) . '.');
+        }
 
         DB::beginTransaction();
         try {
