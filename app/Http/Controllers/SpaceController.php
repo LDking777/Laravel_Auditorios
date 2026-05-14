@@ -169,8 +169,7 @@ class SpaceController extends Controller
 
         Space::create($validated);
 
-        return redirect()->route('admin.spaces.index')
-            ->with('message', 'Auditorio creado exitosamente.');
+        return redirect()->route('admin.spaces.index');
     }
 
     /**
@@ -209,8 +208,7 @@ class SpaceController extends Controller
 
         $space->update($validated);
 
-        return redirect()->route('admin.spaces.index')
-            ->with('message', 'Auditorio actualizado exitosamente.');
+        return redirect()->route('admin.spaces.index');
     }
 
     /**
@@ -220,7 +218,6 @@ class SpaceController extends Controller
     {
         $space->delete();
 
-        return redirect()->route('admin.spaces.index')
-            ->with('message', 'Auditorio eliminado exitosamente.');
+        return redirect()->route('admin.spaces.index');
     }
 }

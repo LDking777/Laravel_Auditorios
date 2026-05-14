@@ -1,6 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, useForm, router, Head } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, useForm, router, Head, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const flash = computed(() => page.props.flash);
 
 // Props enviadas desde el SpaceController (index)
 const props = defineProps({
@@ -103,6 +106,14 @@ const closeModal = () => {
           </svg>
           Nuevo Auditorio
         </button>
+      </div>
+
+      <!-- Flash Messages -->
+      <div v-if="flash?.message" class="mb-6 px-6 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-medium">
+        {{ flash.message }}
+      </div>
+      <div v-if="flash?.error" class="mb-6 px-6 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium">
+        {{ flash.error }}
       </div>
 
       <!-- Navigation Menu -->
