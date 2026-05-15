@@ -1,58 +1,130 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AuditaBook — Sistema de Gestión de Auditorios
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web para la reserva de auditorios universitarios y venta de entradas para eventos. Desarrollada con Laravel 12 + Vue 3 + Inertia.js + Tailwind CSS.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Roles del sistema
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Rol | Descripción |
+|-----|-------------|
+| **user** | Usuario normal — puede ver eventos, comprar asientos individuales |
+| **staff** | Organizador — puede alquilar auditorios completos y gestionar eventos |
+| **admin** | Administrador — CRUD de espacios, gestión de usuarios y monitoreo de reservas |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Funcionalidades por rol
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### User
+- Registro e inicio de sesión
+- Explorar catálogo de eventos disponibles
+- Ver detalle del evento con mapa de asientos interactivo
+- Seleccionar asientos y proceder al checkout
+- Ver ticket digital con asientos asignados
+- Historial de mis reservas
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+> **Captura - Catálogo de eventos:**  
+![alt text](image-1.png)
+> **Captura - Mapa de asientos y selección:** 
+![alt text](image-2.png)
+> **Captura - Ticket digital:** 
+![alt text](image-3.png)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Staff
+- Alquilar un auditorio completo por horas
+- Crear evento asociado al alquiler (nombre, descripción, precio de entrada)
+- Gestionar asientos del evento desde un mapa interactivo
+- Asignar asientos manualmente a invitados (click en el mapa)
+- Liberar asientos ocupados
+- Ver estadísticas: entradas vendidas, ingresos totales
 
-## Agentic Development
+> **Captura - Alquiler de auditorio:** 
+![alt text](image-4.png) 
+![alt text](image-5.png)
+> **Captura - Gestión de evento con mapa de asientos:** 
+![alt text](image-6.png) 
+![alt text](image-7.png)
+> **Captura - Asignación manual de asiento:**  
+![alt text](image-9.png)
+### Admin
+- CRUD completo de auditorios/espacios
+- Gestión de usuarios (cambio de rol, eliminación)
+- Monitoreo de reservas separado por tipo:
+  - Asientos individuales (comprados por usuarios)
+  - Auditorios completos (alquilados por staff)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+> **Captura - CRUD de espacios:** 
+![alt text](image-11.png)
+> **Captura - Gestión de usuarios:** 
+![alt text](image-10.png)
+> **Captura - Monitoreo de reservas (tabs):**  
+![alt text](image-12.png) 
+![alt text](image-13.png)
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
+## Estructura de rutas principales
+
+```
+Público:
+  GET  /eventos                    → Lista de eventos
+  GET  /eventos/{slug}             → Detalle del evento + mapa de asientos
+  GET  /auditorios                 → Catálogo de auditorios
+  GET  /auditorios/{slug}          → Detalle del auditorio
+  GET  /finalizar-reserva          → Checkout / pago
+  GET  /mis-reservas               → Historial del usuario
+  GET  /ticket/{reservation}       → Ticket digital
+
+Staff:
+  GET  /staff/checkout             → Checkout de alquiler
+  POST /staff/rentals              → Crear alquiler + evento
+  GET  /staff/rentals              → Mis alquileres
+  GET  /staff/events/{id}/manage   → Gestionar evento (mapa de asientos)
+  POST /staff/events/{id}/assign-seat  → Asignar asiento
+  DELETE /staff/events/{id}/remove-seat → Liberar asiento
+
+Admin:
+  GET  /admin/spaces               → CRUD de espacios
+  GET  /admin/users                → Gestión de usuarios
+  GET  /admin/reservations         → Monitoreo de reservas
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Tecnologías
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Tecnología | Versión |
+|------------|---------|
+| Laravel | 12 |
+| Vue | 3 |
+| Inertia.js | v3 |
+| Tailwind CSS | 4 |
+| Jetstream | — |
+| Sanctum | — |
+| PHP | 8.4+ |
+| MySQL | — |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Instalación
 
-## Security Vulnerabilities
+```bash
+git clone <repo-url>
+cd AuditaBook
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+npm run dev
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Base de datos
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Tablas principales: `users`, `spaces`, `events`, `reservations`, `availabilities`, `blocked_slots`.
+
+Los asientos se almacenan como JSON en `reservations.notes.asientos_reservados`. No hay tabla separada para asientos. El mapa es fijo: 6 filas (A-F) × 10 columnas por auditorio.
