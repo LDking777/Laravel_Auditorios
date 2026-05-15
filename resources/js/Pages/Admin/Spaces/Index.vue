@@ -125,9 +125,15 @@ const closeModal = () => {
           </span>
         </Link>
         <div class="w-px h-7 bg-white/10 self-center"></div>
-        <Link v-if="$page.component !== 'Admin/Spaces/Index'" :href="route('admin.spaces.index')" class="px-5 py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-medium text-sm">Espacios</Link>
-        <Link v-if="$page.component !== 'Admin/Users/Index'" :href="route('admin.users.index')" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all text-sm font-medium">Usuarios</Link>
-        <Link v-if="$page.component !== 'Admin/Reservations/Index'" :href="route('admin.reservations.index')" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all text-sm font-medium">Reservas y Asientos</Link>
+        <Link :href="route('admin.spaces.index')"
+            :class="$page.component === 'Admin/Spaces/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+            class="px-5 py-2.5 rounded-xl border text-sm transition-all">Espacios</Link>
+        <Link :href="route('admin.users.index')"
+            :class="$page.component === 'Admin/Users/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+            class="px-5 py-2.5 rounded-xl border text-sm transition-all">Usuarios</Link>
+        <Link :href="route('admin.reservations.index')"
+            :class="$page.component === 'Admin/Reservations/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+            class="px-5 py-2.5 rounded-xl border text-sm transition-all">Reservas y Asientos</Link>
       </div>
 
       <!-- Table Container -->

@@ -84,9 +84,6 @@ Route::middleware([
         Route::get('/checkout', [\App\Http\Controllers\Staff\StaffRentalController::class, 'checkout'])->name('checkout');
         Route::post('/rentals', [\App\Http\Controllers\Staff\StaffRentalController::class, 'store'])->name('rentals.store');
         Route::get('/rentals', [\App\Http\Controllers\Staff\StaffRentalController::class, 'index'])->name('rentals.index');
-        Route::get('/rentals/{reservation}', [\App\Http\Controllers\Staff\StaffRentalController::class, 'show'])->name('rentals.show');
-        Route::post('/rentals/{reservation}/assign-seat', [\App\Http\Controllers\Staff\StaffRentalController::class, 'assignSeat'])->name('rentals.assign-seat');
-        Route::delete('/rentals/{reservation}/remove-seat', [\App\Http\Controllers\Staff\StaffRentalController::class, 'removeSeat'])->name('rentals.remove-seat');
 
         // Staff event management
         Route::get('/events/{event}/manage', [StaffManagementController::class, 'manage'])->name('events.manage');

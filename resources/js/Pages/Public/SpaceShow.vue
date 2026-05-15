@@ -4,7 +4,6 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     space: Object,
-    dbReservedSeats: Array,
     upcomingEvents: { type: Array, default: () => [] }
 });
 
@@ -15,8 +14,6 @@ const flashError = computed(() => page.props.flash?.error);
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
 const seatsPerRow = 10;
-
-const reservedSeats = ref(props.dbReservedSeats || []);
 
 const pricePerSeat = computed(() => {
     return props.space.price_per_hour ? parseFloat(props.space.price_per_hour) : 15000;
@@ -135,15 +132,9 @@ const submitStaffRental = () => {
                                     <div 
                                         v-for="col in seatsPerRow" 
                                         :key="row + col"
-                                        :class="reservedSeats.includes(row + col)
-                                            ? 'bg-red-500/20 border-red-500/30 text-red-400'
-                                            : 'bg-white/5 border-white/10 text-white/70'"
-                                        class="w-8 h-8 rounded-lg border text-xs font-bold flex items-center justify-center relative group"
+                                        class="w-8 h-8 rounded-lg border bg-white/5 border-white/10 text-white/50 text-xs font-bold flex items-center justify-center"
                                     >
                                         {{ col }}
-                                        <span class="absolute bottom-full mb-2 bg-slate-900 border border-white/10 text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl whitespace-nowrap">
-                                            Asiento {{ row }}-{{ col }}
-                                        </span>
                                     </div>
                                 </div>
 
@@ -151,16 +142,6 @@ const submitStaffRental = () => {
                             </div>
                         </div>
 
-                        <div class="flex justify-center gap-6 border-t border-white/5 pt-6 text-xs text-white/50">
-                            <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded bg-white/5 border border-white/10"></div>
-                                <span>Disponible</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded bg-red-500/20 border border-red-500/30"></div>
-                                <span>Ocupado</span>
-                            </div>
-                        </div>
                     </template>
                 </div>
 

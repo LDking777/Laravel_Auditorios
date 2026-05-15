@@ -1,10 +1,13 @@
 <script setup>
+import { ref, computed } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
 const props = defineProps({
-    reservations: { type: Array, required: true }
+    fullLeaseReservations: { type: Array, default: () => [] },
+    individualReservations: { type: Array, default: () => [] }
 });
+
+const activeTab = ref('individual');
 
 const page = usePage();
 const flash = computed(() => page.props.flash);
@@ -36,10 +39,10 @@ const deleteReservation = (reservation) => {
                     <h1 class="text-4xl font-bold tracking-tight text-white">
                         Monitoreo de <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Reservas</span>
                     </h1>
-                    <p class="text-white/40 text-sm uppercase tracking-[0.2em] mt-2 font-medium">Asientos comprados por cliente</p>
+                    <p class="text-white/40 text-sm uppercase tracking-[0.2em] mt-2 font-medium">Gestión de asientos y auditorios</p>
                 </div>
                 <div class="flex items-center gap-3 text-xs text-white/40">
-                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400/60"></span>{{ props.reservations.length }} reservas</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400/60"></span>{{ individualReservations.length + fullLeaseReservations.length }} total</span>
                 </div>
             </div>
 
@@ -59,13 +62,36 @@ const deleteReservation = (reservation) => {
                 </Link>
                 <div class="w-px h-7 bg-white/10 self-center"></div>
                 <template v-if="$page.props.auth.user?.role === 'admin'">
-                    <Link v-if="$page.component !== 'Admin/Spaces/Index'" :href="route('admin.spaces.index')" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all text-sm font-medium">Espacios</Link>
-                    <Link v-if="$page.component !== 'Admin/Users/Index'" :href="route('admin.users.index')" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all text-sm font-medium">Usuarios</Link>
+                    <Link :href="route('admin.spaces.index')"
+                        :class="$page.component === 'Admin/Spaces/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+                        class="px-5 py-2.5 rounded-xl border text-sm transition-all">Espacios</Link>
+                    <Link :href="route('admin.users.index')"
+                        :class="$page.component === 'Admin/Users/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+                        class="px-5 py-2.5 rounded-xl border text-sm transition-all">Usuarios</Link>
                 </template>
-                <Link :href="route('admin.reservations.index')" class="px-5 py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-medium text-sm">Reservas y Asientos</Link>
+                <Link :href="route('admin.reservations.index')"
+                    :class="$page.component === 'Admin/Reservations/Index' ? 'bg-blue-600/20 border-blue-500/30 text-blue-300 font-medium' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'"
+                    class="px-5 py-2.5 rounded-xl border text-sm transition-all">Reservas y Asientos</Link>
             </div>
 
-            <div class="backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+            <!-- Tabs -->
+            <div class="flex gap-1 mb-8 p-1 bg-white/[0.03] border border-white/10 rounded-2xl w-fit">
+                <button @click="activeTab = 'individual'"
+                    :class="activeTab === 'individual' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'text-white/40 hover:text-white/70 border-transparent'"
+                    class="px-5 py-2.5 rounded-xl text-xs font-bold border transition-all">
+                    Asientos Individuales
+                    <span class="ml-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[10px]">{{ individualReservations.length }}</span>
+                </button>
+                <button @click="activeTab = 'fullLease'"
+                    :class="activeTab === 'fullLease' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'text-white/40 hover:text-white/70 border-transparent'"
+                    class="px-5 py-2.5 rounded-xl text-xs font-bold border transition-all">
+                    Auditorios Completos
+                    <span class="ml-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[10px]">{{ fullLeaseReservations.length }}</span>
+                </button>
+            </div>
+
+            <!-- Individual seats table -->
+            <div v-show="activeTab === 'individual'" class="backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -80,7 +106,7 @@ const deleteReservation = (reservation) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
-                            <tr v-for="r in props.reservations" :key="r.id" class="group hover:bg-white/[0.02] transition-all duration-300">
+                            <tr v-for="r in individualReservations" :key="r.id" class="group hover:bg-white/[0.02] transition-all duration-300">
                                 <td class="py-6 px-8"><span class="text-sm font-medium text-white/70">#{{ r.id }}</span></td>
                                 <td class="py-6 px-8">
                                     <div class="flex items-center gap-2">
@@ -110,7 +136,7 @@ const deleteReservation = (reservation) => {
                                             :key="idx"
                                             class="px-2.5 py-1 rounded-lg text-[11px] font-bold font-mono bg-blue-500/10 border border-blue-500/20 text-blue-300"
                                         >
-                                            {{ seat }}
+                                            {{ typeof seat === 'string' ? seat : seat.seat_id }}
                                         </span>
                                         <span v-if="r.seats.length === 0" class="text-white/30 text-xs italic">Sin asientos</span>
                                     </div>
@@ -136,7 +162,7 @@ const deleteReservation = (reservation) => {
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-if="props.reservations.length === 0">
+                            <tr v-if="individualReservations.length === 0">
                                 <td colspan="7" class="py-20 text-center">
                                     <div class="flex flex-col items-center gap-4">
                                         <div class="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
@@ -144,7 +170,87 @@ const deleteReservation = (reservation) => {
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5h6M9 9h6m-6 4h6m-6 4h6M5 8h14M5 16h14" />
                                             </svg>
                                         </div>
-                                        <p class="text-white/30 font-medium">No hay reservas registradas aún.</p>
+                                        <p class="text-white/30 font-medium">No hay reservas de asientos individuales.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Full lease table -->
+            <div v-show="activeTab === 'fullLease'" class="backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white/[0.02] border-b border-white/5">
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">#</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Auditorio</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Evento / Cliente</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Rango</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Estado</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Creado</th>
+                                <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr v-for="r in fullLeaseReservations" :key="r.id" class="group hover:bg-white/[0.02] transition-all duration-300">
+                                <td class="py-6 px-8"><span class="text-sm font-medium text-white/70">#{{ r.id }}</span></td>
+                                <td class="py-6 px-8">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-white/5 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <div class="font-bold text-white group-hover:text-amber-400 transition-colors">{{ r.space_name }}</div>
+                                    </div>
+                                </td>
+                                <td class="py-6 px-8">
+                                    <div class="flex items-center gap-2">
+                                        <div>
+                                            <div class="text-sm font-semibold text-amber-300">{{ r.event_name }}</div>
+                                            <div class="text-xs text-white/40">{{ r.user_name }} · {{ r.user_email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-6 px-8">
+                                    <div class="text-xs text-white/60">
+                                        <div>{{ new Date(r.start_time).toLocaleDateString('es-ES') }}</div>
+                                        <div class="text-[10px] text-white/30">{{ new Date(r.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }} — {{ new Date(r.end_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }}</div>
+                                    </div>
+                                </td>
+                                <td class="py-6 px-8">
+                                    <span :class="statusColors[r.status] || 'bg-white/5 text-white/50 border-white/10'" class="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border backdrop-blur-md">
+                                        {{ r.status }}
+                                    </span>
+                                </td>
+                                <td class="py-6 px-8">
+                                    <div class="text-sm text-white/50">{{ new Date(r.created_at).toLocaleDateString('es-ES') }}</div>
+                                    <div class="text-[10px] text-white/25">{{ new Date(r.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }}</div>
+                                </td>
+                                <td class="py-6 px-8 text-right">
+                                    <button
+                                        @click="deleteReservation(r)"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/10 text-rose-400 hover:text-rose-300 active:scale-[0.97]"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Liberar
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="fullLeaseReservations.length === 0">
+                                <td colspan="7" class="py-20 text-center">
+                                    <div class="flex flex-col items-center gap-4">
+                                        <div class="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-white/30 font-medium">No hay alquileres de auditorios completos.</p>
                                     </div>
                                 </td>
                             </tr>

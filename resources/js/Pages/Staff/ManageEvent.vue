@@ -12,16 +12,22 @@ const props = defineProps({
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
 const seatsPerRow = 10;
-const assignedSeats = ref(props.occupiedSeats);
-const guests = ref(props.tickets);
+const assignedSeats = computed(() => props.occupiedSeats);
+const guests = computed(() => props.tickets);
 
 const guestName = ref('');
 const guestEmail = ref('');
 const selectedSeat = ref('');
 
 const seatColor = (seatId) => {
-    if (assignedSeats.value.includes(seatId)) return 'bg-blue-500/20 border-blue-500/30 text-blue-400';
-    return 'bg-white/5 border-white/10 text-white/50';
+    if (assignedSeats.value.includes(seatId)) return 'bg-blue-500/20 border-blue-500/30 text-blue-400 cursor-not-allowed';
+    if (selectedSeat.value === seatId) return 'bg-green-500/30 border-green-400/50 text-green-300 ring-2 ring-green-400/50';
+    return 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:border-white/20 cursor-pointer';
+};
+
+const selectSeat = (seatId) => {
+    if (assignedSeats.value.includes(seatId)) return;
+    selectedSeat.value = selectedSeat.value === seatId ? '' : seatId;
 };
 
 const assignSeat = () => {
@@ -84,7 +90,10 @@ const removeSeat = (reservationId) => {
                         <div class="space-y-3">
                             <input v-model="guestName" type="text" placeholder="Nombre del invitado" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-white/10" />
                             <input v-model="guestEmail" type="email" placeholder="Email (opcional)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-white/10" />
-                            <input v-model="selectedSeat" type="text" placeholder="Ej: A5" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-white/10 uppercase" />
+                            <div class="flex items-center gap-2 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-sm">
+                                <span class="text-white/40">Asiento:</span>
+                                <span class="font-bold text-green-400">{{ selectedSeat || 'Selecciona uno en el mapa' }}</span>
+                            </div>
                             <button @click="assignSeat" :disabled="!guestName || !selectedSeat" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 rounded-xl text-xs transition-all disabled:opacity-30">Asignar Asiento</button>
                         </div>
                     </div>
@@ -105,7 +114,8 @@ const removeSeat = (reservationId) => {
                             <div class="flex gap-2">
                                 <div v-for="col in seatsPerRow" :key="row + col"
                                     :class="seatColor(row + col)"
-                                    class="w-8 h-8 rounded-lg border text-[10px] font-bold flex items-center justify-center"
+                                    class="w-8 h-8 rounded-lg border text-[10px] font-bold flex items-center justify-center transition-all duration-150"
+                                    @click="selectSeat(row + col)"
                                 >{{ col }}</div>
                             </div>
                             <span class="w-6 text-sm font-bold text-white/30 text-left ml-2">{{ row }}</span>

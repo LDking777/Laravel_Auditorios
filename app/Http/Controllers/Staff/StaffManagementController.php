@@ -135,6 +135,24 @@ class StaffManagementController extends Controller
             'guest_email' => 'nullable|email',
         ]);
 
+        $alreadyAssigned = Reservation::where('event_id', $event->id)
+            ->whereNotIn('status', ['cancelada', 'rechazada'])
+            ->get()
+            ->contains(function ($r) use ($validated) {
+                $notes = json_decode($r->notes, true);
+                if (!isset($notes['asientos_reservados'])) return false;
+                foreach ($notes['asientos_reservados'] as $s) {
+                    $seatId = is_string($s) ? $s : ($s['seat_id'] ?? '');
+                    if ($seatId === $validated['seat_id']) return true;
+                }
+                return false;
+            });
+
+        if ($alreadyAssigned) {
+            return redirect()->route('staff.events.manage', $event->id)
+                ->with('error', "El asiento {$validated['seat_id']} ya está ocupado.");
+        }
+
         $reservation = Reservation::create([
             'space_id' => $event->space_id,
             'event_id' => $event->id,
