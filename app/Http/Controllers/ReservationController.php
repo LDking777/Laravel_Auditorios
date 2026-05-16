@@ -27,11 +27,45 @@ class ReservationController extends Controller
         $event = null;
         $ticketPrice = (float) ($space->price_per_hour ?? 15000);
 
+        $startTime = Carbon::now()->addHour()->startOfHour();
+        $endTime = $startTime->copy()->addHours(2);
+
         if ($request->event_id) {
             $event = \App\Models\Event::find($request->event_id);
             if ($event) {
                 $ticketPrice = (float) $event->ticket_price;
+                $startTime = Carbon::parse($event->start_time);
+                $endTime = Carbon::parse($event->end_time);
             }
+        }
+
+        $conflict = Reservation::where('space_id', $request->space_id)
+            ->whereNotIn('status', ['cancelada', 'rechazada'])
+            ->where(function ($q) use ($startTime, $endTime) {
+                $q->whereBetween('start_time', [$startTime, $endTime])
+                  ->orWhereBetween('end_time', [$startTime, $endTime])
+                  ->orWhere(function ($q2) use ($startTime, $endTime) {
+                      $q2->where('start_time', '<=', $startTime)
+                         ->where('end_time', '>=', $endTime);
+                  });
+            });
+
+        if ($request->event_id) {
+            $conflict->where(function ($q) use ($request) {
+                $q->where('event_id', '!=', $request->event_id)
+                  ->orWhereNull('event_id');
+            });
+
+            $parentReservationId = \App\Models\Event::where('id', $request->event_id)->value('reservation_id');
+            if ($parentReservationId) {
+                $conflict->where('id', '!=', $parentReservationId);
+            }
+        }
+
+        $conflict = $conflict->first();
+
+        if ($conflict) {
+            return back()->with('error', 'El auditorio ya está reservado en ese horario. No se pueden comprar boletos.');
         }
 
         return Inertia::render('Public/Checkout', [
@@ -71,6 +105,35 @@ class ReservationController extends Controller
                 $startTime = Carbon::parse($event->start_time);
                 $endTime = Carbon::parse($event->end_time);
             }
+        }
+
+        $conflict = Reservation::where('space_id', $request->space_id)
+            ->whereNotIn('status', ['cancelada', 'rechazada'])
+            ->where(function ($q) use ($startTime, $endTime) {
+                $q->whereBetween('start_time', [$startTime, $endTime])
+                  ->orWhereBetween('end_time', [$startTime, $endTime])
+                  ->orWhere(function ($q2) use ($startTime, $endTime) {
+                      $q2->where('start_time', '<=', $startTime)
+                         ->where('end_time', '>=', $endTime);
+                  });
+            });
+
+        if ($request->event_id) {
+            $conflict->where(function ($q) use ($request) {
+                $q->where('event_id', '!=', $request->event_id)
+                  ->orWhereNull('event_id');
+            });
+
+            $parentReservationId = \App\Models\Event::where('id', $request->event_id)->value('reservation_id');
+            if ($parentReservationId) {
+                $conflict->where('id', '!=', $parentReservationId);
+            }
+        }
+
+        $conflict = $conflict->first();
+
+        if ($conflict) {
+            return back()->with('error', 'El auditorio ya está reservado en ese horario por ' . e($conflict->user_name) . '.');
         }
 
         $seatsSelected = $request->seats;

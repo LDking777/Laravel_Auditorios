@@ -29,22 +29,20 @@ const logout = () => {
                     </Link>
 
                     <div class="hidden sm:flex items-center gap-1" v-if="user">
-                        <template v-if="user.role !== 'staff' && user.role !== 'admin'">
-                            <Link 
-                                :href="route('events.public.index')" 
-                                class="text-sm font-medium px-4 py-2 rounded-xl transition-all"
-                                :class="$page.component === 'Public/EventsIndex' ? 'text-blue-400 bg-blue-500/10' : 'text-white/60 hover:text-white hover:bg-white/5'"
-                            >
-                                Eventos
-                            </Link>
-                            <Link 
-                                :href="route('reservations.user.index')" 
-                                class="text-sm font-medium px-4 py-2 rounded-xl transition-all"
-                                :class="$page.component === 'Public/MyReservations' ? 'text-blue-400 bg-white/5' : 'text-white/60 hover:text-white hover:bg-white/5'"
-                            >
-                                Mis Boletos
-                            </Link>
-                        </template>
+                        <Link 
+                            :href="route('events.public.index')" 
+                            class="text-sm font-medium px-4 py-2 rounded-xl transition-all"
+                            :class="$page.component === 'Public/EventsIndex' ? 'text-blue-400 bg-blue-500/10' : 'text-white/60 hover:text-white hover:bg-white/5'"
+                        >
+                            Eventos
+                        </Link>
+                        <Link 
+                            :href="route('reservations.user.index')" 
+                            class="text-sm font-medium px-4 py-2 rounded-xl transition-all"
+                            :class="$page.component === 'Public/MyReservations' ? 'text-blue-400 bg-white/5' : 'text-white/60 hover:text-white hover:bg-white/5'"
+                        >
+                            Mis Boletos
+                        </Link>
                     </div>
                 </div>
 
@@ -69,7 +67,6 @@ const logout = () => {
 
                     <div class="flex items-center gap-2">
                         <Link 
-                            v-if="user.role !== 'staff' && user.role !== 'admin'"
                             :href="route('events.public.index')" 
                             class="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white"
                             title="Eventos"
@@ -79,7 +76,6 @@ const logout = () => {
                             </svg>
                         </Link>
                         <Link 
-                            v-if="user.role !== 'staff'"
                             :href="route('reservations.user.index')" 
                             class="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white"
                             title="Mis Boletos"

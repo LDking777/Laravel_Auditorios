@@ -4,7 +4,8 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     space: Object,
-    upcomingEvents: { type: Array, default: () => [] }
+    upcomingEvents: { type: Array, default: () => [] },
+    dbReservedSeats: { type: Array, default: () => [] },
 });
 
 const page = usePage();

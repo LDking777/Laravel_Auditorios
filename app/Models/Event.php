@@ -22,6 +22,11 @@ class Event extends Model
         'end_time',
     ];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
+
     protected static function booted()
     {
         static::creating(function ($event) {

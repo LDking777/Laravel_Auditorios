@@ -20,6 +20,11 @@ class Reservation extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
+
     public function space()
     {
         return $this->belongsTo(Space::class);

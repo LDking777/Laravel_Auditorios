@@ -17,13 +17,19 @@ class StaffRentalController extends Controller
     {
         $request->validate([
             'space_id' => 'required|exists:spaces,id',
-            'start_time' => 'required|date|after:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
         ]);
 
         $space = Space::findOrFail($request->space_id);
         $start = Carbon::parse($request->start_time);
         $end = Carbon::parse($request->end_time);
+
+        $conflict = $this->findOverlap($request->space_id, $start, $end);
+        if ($conflict) {
+            return back()->with('error', 'El auditorio ya está reservado en ese horario por ' . e($conflict->user_name) . '.');
+        }
+
         $hours = max(1, $start->diffInHours($end));
         $rate = $space->price_per_hour ?? 15000;
         $total = $hours * $rate;
@@ -60,7 +66,7 @@ class StaffRentalController extends Controller
     {
         $validated = $request->validate([
             'space_id' => 'required|exists:spaces,id',
-            'start_time' => 'required|date|after:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
             'event_name' => 'required|string|max:255',
             'event_description' => 'nullable|string',
